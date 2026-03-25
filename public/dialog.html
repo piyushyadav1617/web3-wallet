@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session Details</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base:         #111318;
+      --bg-panel:        #16181f;
+      --bg-card:         #1c1e28;
+      --bg-card-hover:   #21232e;
+      --border:          #2a2c3a;
+      --border-subtle:   #1f2130;
+      --text-primary:    #e8eaf2;
+      --text-secondary:  #8b8fa8;
+      --text-label:      #585c72;
+      --accent-green:    #22c55e;
+      --accent-green-bg: #0f2a1a;
+      --accent-blue:     #60a5fa;
+      --radius-lg:       14px;
+      --radius-md:       10px;
+      --radius-sm:       6px;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+    }
+
+    /* ── DIALOG SHELL ───────────────────────────── */
+    .dialog {
+      width: min(96vw, 920px);
+      max-height: min(96vh, 720px);
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow:
+        0 32px 80px rgba(0,0,0,0.7),
+        0 0 0 1px rgba(255,255,255,0.03);
+      animation: rise 0.28s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    @keyframes rise {
+      from { opacity:0; transform: translateY(10px) scale(0.98); }
+      to   { opacity:1; transform: none; }
+    }
+
+    /* ── TITLE BAR ──────────────────────────────── */
+    .titlebar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+
+    .titlebar-title {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: 0.01em;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 10px 3px 8px;
+      border-radius: 999px;
+    }
+
+    .badge-completed {
+      color: var(--accent-green);
+      background: var(--accent-green-bg);
+      border: 1px solid rgba(34,197,94,0.2);
+    }
+
+    .badge-completed::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--accent-green);
+    }
+
+    .titlebar-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 2px;
+    }
+
+    .icon-btn {
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+    .icon-btn:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+    /* ── META ROW ───────────────────────────────── */
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 28px;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11.5px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .meta-label { color: var(--text-label); }
+    .meta-value { color: var(--text-secondary); }
+
+    /* ── TWO-COLUMN BODY ────────────────────────── */
+    .body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* ── PANEL ──────────────────────────────────── */
+    .panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .panel + .panel {
+      border-left: 1px solid var(--border-subtle);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 20px 9px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: 0.03em;
+      flex-shrink: 0;
+      color: var(--text-secondary);
+    }
+
+    .panel-scroll {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 2px 16px 16px;
+      min-height: 0;
+    }
+
+    .panel-scroll::-webkit-scrollbar { width: 3px; }
+    .panel-scroll::-webkit-scrollbar-track { background: transparent; }
+    .panel-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    /* ── DATA GRID ──────────────────────────────── */
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .data-cell {
+      background: var(--bg-card);
+      padding: 9px 12px;
+      transition: background 0.1s;
+    }
+    .data-cell:hover { background: var(--bg-card-hover); }
+
+    .data-cell-label {
+      font-size: 10px;
+      color: var(--text-label);
+      margin-bottom: 3px;
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.03em;
+    }
+
+    .data-cell-value {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-primary);
+      font-family: 'IBM Plex Mono', monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── CONVERSATION ───────────────────────────── */
+    .convo {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .msg { display: flex; flex-direction: column; gap: 5px; }
+
+    .msg-role {
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .msg-role.agent    { color: var(--accent-blue); }
+    .msg-role.customer { color: var(--text-label); }
+
+    .msg-bubble {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 3px var(--radius-md) var(--radius-md) var(--radius-md);
+      padding: 9px 13px;
+      font-size: 12.5px;
+      line-height: 1.65;
+      color: var(--text-primary);
+    }
+
+    .msg.customer .msg-bubble {
+      border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 3px;
+      background: transparent;
+      color: var(--text-secondary);
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────── */
+    @media (max-width: 580px) {
+      .body {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .panel {
+        max-height: none;
+        overflow: visible;
+      }
+      .panel-scroll {
+        overflow: visible;
+        max-height: none;
+      }
+      .panel + .panel {
+        border-left: none;
+        border-top: 1px solid var(--border-subtle);
+      }
+      .meta-row { gap: 4px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dialog">
+
+  <!-- Title bar -->
+  <div class="titlebar">
+    <span class="titlebar-title">Session Details</span>
+    <span class="badge badge-completed">Completed</span>
+    <div class="titlebar-actions">
+      <button class="icon-btn" title="Refresh">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+          <path d="M21 3v5h-5"/>
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+          <path d="M8 16H3v5"/>
+        </svg>
+      </button>
+      <button class="icon-btn" title="Close" id="btn-close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Meta row -->
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Record ID:</span><span class="meta-value">123456</span></div>
+    <div class="meta-item"><span class="meta-label">Started at:</span><span class="meta-value">16 Feb 2026 12:25:18</span></div>
+    <div class="meta-item"><span class="meta-label">Thread ID:</span><span class="meta-value">db4557adfa4c43…</span></div>
+    <div class="meta-item"><span class="meta-label">Execution ID:</span><span class="meta-value">FHNzAGW4UvmEiE6…</span></div>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+
+    <!-- Left panel: Initial State -->
+    <div class="panel">
+      <div class="panel-header">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <line x1="9" y1="21" x2="9" y2="9"/>
+        </svg>
+        Initial State
+      </div>
+      <div class="panel-scroll">
+        <div class="data-grid">
+          <div class="data-cell"><div class="data-cell-label">record id</div><div class="data-cell-value">123456</div></div>
+          <div class="data-cell"><div class="data-cell-label">total due with interest</div><div class="data-cell-value">26,612</div></div>
+          <div class="data-cell"><div class="data-cell-label">propensity biu</div><div class="data-cell-value">DEEPRED</div></div>
+          <div class="data-cell"><div class="data-cell-label">paid to date</div><div class="data-cell-value">16-02-2025</div></div>
+          <div class="data-cell"><div class="data-cell-label">fname</div><div class="data-cell-value">Divyanshu</div></div>
+          <div class="data-cell"><div class="data-cell-label">dnc status</div><div class="data-cell-value">N</div></div>
+          <div class="data-cell"><div class="data-cell-label">hni</div><div class="data-cell-value">N</div></div>
+          <div class="data-cell"><div class="data-cell-label">is nri</div><div class="data-cell-value">0</div></div>
+          <div class="data-cell"><div class="data-cell-label">mr mrs</div><div class="data-cell-value">Mr</div></div>
+          <div class="data-cell"><div class="data-cell-label">policy status cd</div><div class="data-cell-value">LA</div></div>
+          <div class="data-cell"><div class="data-cell-label">original sa</div><div class="data-cell-value">225,751</div></div>
+          <div class="data-cell"><div class="data-cell-label">interest amt</div><div class="data-cell-value">1,612</div></div>
+          <div class="data-cell"><div class="data-cell-label">total premium paid</div><div class="data-cell-value">25,563</div></div>
+          <div class="data-cell"><div class="data-cell-label">total loyalty amount</div><div class="data-cell-value">451,502</div></div>
+          <div class="data-cell"><div class="data-cell-label">yearly loyalty amount</div><div class="data-cell-value">45,150</div></div>
+          <div class="data-cell"><div class="data-cell-label">nominee relation</div><div class="data-cell-value">Mother</div></div>
+          <div class="data-cell"><div class="data-cell-label">lname</div><div class="data-cell-value">Jha</div></div>
+          <div class="data-cell"><div class="data-cell-label">phone</div><div class="data-cell-value">+918208737722</div></div>
+          <div class="data-cell"><div class="data-cell-label">frequency</div><div class="data-cell-value">1</div></div>
+          <div class="data-cell"><div class="data-cell-label">premiumterm</div><div class="data-cell-value">10</div></div>
+          <div class="data-cell"><div class="data-cell-label">riskterm</div><div class="data-cell-value">15</div></div>
+          <div class="data-cell"><div class="data-cell-label">lapsed date</div><div class="data-cell-value">16-02-2025</div></div>
+          <div class="data-cell"><div class="data-cell-label">first issue date</div><div class="data-cell-value">16-02-2024</div></div>
+          <div class="data-cell"><div class="data-cell-label">x suspense amt</div><div class="data-cell-value">0</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right panel: Call -->
+    <div class="panel">
+      <div class="panel-header">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.1 12a19.79 19.79 0 0 1-3-8.57A2 2 0 0 1 3.08 1.4h3a2 2 0 0 1 2 1.72c.13.97.36 1.92.7 2.83a2 2 0 0 1-.45 2.11L7.09 9.1a16 16 0 0 0 7.86 7.86l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.86.57 2.83.7A2 2 0 0 1 22 16.9z"/>
+        </svg>
+        Call
+      </div>
+      <div class="panel-scroll">
+        <div class="convo">
+          <div class="msg">
+            <span class="msg-role agent">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
+              Agent
+            </span>
+            <div class="msg-bubble">Hello, my name is Tanya. I am calling from Indus-Ind Nippon Life Insurance. Am I speaking with Divyanshu?</div>
+          </div>
+          <div class="msg customer">
+            <span class="msg-role customer">Customer</span>
+            <div class="msg-bubble">Three minutes and...</div>
+          </div>
+          <div class="msg customer">
+            <span class="msg-role customer">Customer</span>
+            <div class="msg-bubble">I am busy. Call me after three minutes.</div>
+          </div>
+          <div class="msg">
+            <span class="msg-role agent">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
+              Agent
+            </span>
+            <div class="msg-bubble">Alright, I will call you back after three minutes. Thank you for your time today. Have a great day!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  window.addEventListener('message', (e) => {
+    const { type, payload } = e.data || {};
+    if (type === 'DIALOG_CONFIG') {
+      // hook dynamic data here
+    }
+  });
+  document.getElementById('btn-close')?.addEventListener('click', () => {
+    window.parent.postMessage({ type: 'DIALOG_RESULT', result: 'closed' }, '*');
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+is session unlocked?
+├─ yes → wallet
+└─ no
+   └─ does vault exist?
+      ├─ yes → unlock
+      └─ no → onboarding

@@ -1,10 +1,9 @@
 import { type ReactNode } from "react"
 import { AnimatePresence, motion } from "motion/react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { stepVariants, stepTransition, type Direction } from "@/lib/motion"
 import { ProgressDots } from "./progress-dots"
-import { Car, ChevronLeft } from "lucide-react"
+import { ChevronLeft } from "lucide-react"
 
 interface StepLayoutProps {
   stepKey: string
@@ -24,8 +23,8 @@ export function StepLayout({
   children,
 }: StepLayoutProps) {
   return (
-    <div className="flex items-center relative justify-center px-4">
-      <Card className="w-full max-w-lg relative top-20">
+    <div className="flex h-screen relative justify-center items-center px-4">
+      <Card className="w-full max-w-md">
         <CardHeader className="">
           <div className="flex flex-row items-center">
             {onBack && (
@@ -41,10 +40,8 @@ export function StepLayout({
               <ProgressDots total={totalSteps} currentIndex={currentIndex} />
             </div>
           </div>
-          {/* <CardTitle className="text-2xl tracking-tight mt-4">{title}</CardTitle> */}
         </CardHeader>
-        <CardContent className="flex h-120 flex-col">
-
+        <CardContent className="flex h-130 flex-col">
           <div className="flex-1 min-h-0">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div

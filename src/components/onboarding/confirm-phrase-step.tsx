@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button"
 import { generateRandomIndices, shuffleArray } from "@/lib/utils"
 
 export function ConfirmPhraseStep({phrase, onContinue}: {
-  phrase: string[]
+  phrase: string[],
+  isSaving:boolean,
+  error: string | null
   onContinue: () => void
 }) {
 
@@ -150,7 +152,7 @@ interface AlertProps {
 export function PerfectAlert({ open, onOpenChange, action }: AlertProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent size="sm">
         <AlertDialogHeader>
         <AlertDialogMedia className="bg-green-500 text-green-800 dark:bg-green-400">
             <CheckCircle2 />
@@ -166,7 +168,7 @@ export function PerfectAlert({ open, onOpenChange, action }: AlertProps) {
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-           {/* <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel> */}
+           <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={action}>
             Got it
           </AlertDialogAction>
@@ -187,7 +189,7 @@ import {
 export function ErrorAlert({ open, onOpenChange, action }: AlertProps){
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent size="sm">
         <AlertDialogHeader>
           <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
             <X />
@@ -200,7 +202,7 @@ export function ErrorAlert({ open, onOpenChange, action }: AlertProps){
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-           {/* <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel> */}
+           <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
           <AlertDialogAction variant="default" onClick={action}>Try again</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

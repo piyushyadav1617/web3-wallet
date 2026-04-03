@@ -15,7 +15,7 @@ import {
     FieldSet,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { InputGroup, InputGroupButton, InputGroupInput } from "../ui/input-group"
+import { InputGroup, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 import { EyeOffIcon, EyeIcon } from "lucide-react"
 
 const schema = z
@@ -46,7 +46,9 @@ export function PasswordStep(props: {
             password: props.defaultPassword ?? "",
             confirmPassword: "",
             acknowledge: false,
-        }
+        },
+        mode: 'onTouched', 
+        // reValidateMode: 'onChange'
     })
 
     function onSubmit(values: FormValues) {
@@ -56,7 +58,7 @@ export function PasswordStep(props: {
     return (
         <div className="h-full flex flex-col gap-4">
             <h2 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-                
+
                 Wallet Password</h2>
             <form id={formId} onSubmit={form.handleSubmit(onSubmit)}>
                 <FieldGroup>
@@ -67,7 +69,7 @@ export function PasswordStep(props: {
                         render={({ field, fieldState }) => (
                             <Field data-invalid={fieldState.invalid}>
                                 <FieldLabel htmlFor={`${formId}-password`}>Create new password</FieldLabel>
-                                <InputGroup>
+                                <InputGroup className="h-12">
                                     <InputGroupInput
                                         {...field}
                                         id={`${formId}-password`}
@@ -81,7 +83,10 @@ export function PasswordStep(props: {
                                         <span className="sr-only">Toggle password visibility</span>
                                     </InputGroupButton>
                                 </InputGroup>
-                                {fieldState.invalid && (<FieldError errors={[fieldState.error]} />)}
+
+                                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : <FieldDescription>
+                                    Must be at least 8 characters long.
+                                </FieldDescription>}
                             </Field>
                         )}
                     />
@@ -101,7 +106,7 @@ export function PasswordStep(props: {
                                     autoComplete="new-password"
                                     required
                                     aria-invalid={fieldState.invalid}
-                                    placeholder="Repeat password"
+                                    className="h-11"
                                 />
 
 

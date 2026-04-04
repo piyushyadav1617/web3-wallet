@@ -19,7 +19,7 @@ import { decryptVault } from "@/lib/vault"
 import { useNavigate } from "react-router"
 import { useWalletSession } from "@/state/session-store"
 import { toast } from "sonner"
-import {  deriveEthereumWallet } from "@/lib/keyring"
+import { createInitialKeyring } from "@/lib/keyring"
 
 
 const schema = z.object({
@@ -47,9 +47,9 @@ export function UnlockPage() {
       if (!vault) {
         throw new Error("No wallet found")
       }
-
       const { mnemonic } = await decryptVault(vault, values.password)
-      unlock(mnemonic)
+      const keyring = createInitialKeyring(mnemonic, 1)
+      unlock(mnemonic, keyring)
       form.reset()
       navigate("/wallet")
     } catch {

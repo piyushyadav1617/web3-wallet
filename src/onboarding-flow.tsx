@@ -15,6 +15,7 @@ import { encryptVault } from "./lib/vault"
 import { saveVaultRecord } from "./lib/storage"
 import { useNavigate } from "react-router"
 import { useWalletSession } from "./state/session-store"
+import { createInitialKeyring } from "./lib/keyring"
 
 export function OnboardingFlow() {
   const [state, dispatch] = useReducer(
@@ -70,7 +71,8 @@ export function OnboardingFlow() {
 
   async function handleOpenNewWallet(){
       const mnemonic = state.draft.mnemonic
-      unlock(mnemonic)
+      const keyring = createInitialKeyring(mnemonic, 1)
+      unlock(mnemonic, keyring)
       dispatch({type: "CLEAR_DRAFT"})
       navigate("/wallet")
   }

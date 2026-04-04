@@ -1,11 +1,11 @@
+import type { Keyring } from "@/lib/keyring"
 import { createContext, useContext, useMemo, useState } from "react"
-import type { KeyringState } from "./keyring"
 
 
 export type SessionState = {
   isUnlocked: boolean
   mnemonic: string | null
-  keyring: KeyringState | null
+  keyring: Keyring | null
 }
 
 export const initialSessionState: SessionState = {
@@ -15,7 +15,7 @@ export const initialSessionState: SessionState = {
 }
 
 type SessionContextValue = SessionState & {
-  unlock: (mnemonic: string) => void
+  unlock: (mnemonic: string, keyring: Keyring) => void
   lock: () => void
 }
 
@@ -27,11 +27,11 @@ export function WalletSessionProvider({ children }: { children: React.ReactNode 
   const value = useMemo<SessionContextValue>(
     () => ({
       ...state,
-      unlock: (mnemonic: string) => {
+      unlock: (mnemonic: string, keyring: Keyring) => {
         setState({
           isUnlocked: true,
           mnemonic,
-          keyring: null
+          keyring: keyring
         })
       },
       lock: () => {

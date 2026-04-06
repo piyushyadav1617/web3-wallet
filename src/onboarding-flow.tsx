@@ -71,7 +71,7 @@ export function OnboardingFlow() {
 
   async function handleOpenNewWallet(){
       const mnemonic = state.draft.mnemonic
-      const keyring = createInitialKeyring(mnemonic, 1)
+      const keyring = await createInitialKeyring(mnemonic, 1)
       unlock(mnemonic, keyring)
       dispatch({type: "CLEAR_DRAFT"})
       navigate("/wallet")

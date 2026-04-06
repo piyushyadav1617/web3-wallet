@@ -48,7 +48,7 @@ export function UnlockPage() {
         throw new Error("No wallet found")
       }
       const { mnemonic } = await decryptVault(vault, values.password)
-      const keyring = createInitialKeyring(mnemonic, 1)
+      const keyring = await createInitialKeyring(mnemonic, 1)
       unlock(mnemonic, keyring)
       form.reset()
       navigate("/wallet")

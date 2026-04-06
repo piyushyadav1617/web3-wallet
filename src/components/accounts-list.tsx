@@ -251,7 +251,7 @@ export function NetworksList() {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder="Search networks"
-                        className="h-20  pl-14 sm:h-14 "
+                        className= "pl-14 h-12 "
                     />
                 </div>
 

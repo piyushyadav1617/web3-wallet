@@ -1,7 +1,9 @@
 import { HDNodeWallet } from "ethers"
 import { HDKey } from "micro-ed25519-hdkey";
-import * as bip39 from "@scure/bip39";
+import { HDKey as BitcoinHDKey } from "@scure/bip32"
+import { mnemonicToSeedSync } from "@scure/bip39";
 import { createKeyPairSignerFromPrivateKeyBytes } from "@solana/kit";
+import * as bitcoin from "bitcoinjs-lib";
 
 export interface DerivedAddress {
     network: Network;
@@ -37,7 +39,7 @@ export function deriveEthereumWallet(mnemonic: string, accountIndex: number): De
 }
 
 export async function deriveSolanaAddress(mnemonic: string, accountIndex: number): Promise<DerivedAddress> {
-    const seed = bip39.mnemonicToSeedSync(mnemonic);
+    const seed = mnemonicToSeedSync(mnemonic);
     const hd = HDKey.fromMasterSeed(seed);
     const path = `m/44'/501'/${accountIndex}'/0'`;
     const child = hd.derive(path);
@@ -50,8 +52,26 @@ export async function deriveSolanaAddress(mnemonic: string, accountIndex: number
     }
 }
 
-export function deriveBitcoinAddress() {
-
+export function deriveBitcoinAddress(mnemonic: string, accountIndex: number): DerivedAddress {
+    const seed = mnemonicToSeedSync(mnemonic)
+    const hd = BitcoinHDKey.fromMasterSeed(seed);
+    const path = `m/44'/0'/0'/0/${accountIndex}`;
+    const child = hd.derive(path)
+    if (!child.publicKey) {
+        throw new Error("Failed to derive Bitcoin public key");
+    }
+    const { address } = bitcoin.payments.p2pkh({
+        pubkey: child.publicKey
+    });
+    if (!address) {
+        throw new Error("Failed to derive Bitcoin address");
+    }
+    return {
+        network: "bitcoin",
+        accountIndex,
+        address: address,
+        path,
+    };
 }
 
 export async function deriveWalletAccount(
@@ -59,13 +79,15 @@ export async function deriveWalletAccount(
     accountIndex: number
 ): Promise<WalletAccount> {
     const ethereum = deriveEthereumWallet(mnemonic, accountIndex)
-    let solana = await deriveSolanaAddress(mnemonic, accountIndex)
+    const bitcoin = deriveBitcoinAddress(mnemonic, accountIndex)
+    const solana = await deriveSolanaAddress(mnemonic, accountIndex)
     return {
         accountIndex,
         label: `Account ${accountIndex + 1}`,
         addresses: {
             ethereum: ethereum,
             solana: solana,
+            bitcoin: bitcoin
         },
     }
 }
@@ -77,17 +99,17 @@ export async function createInitialKeyring(
     const accountsResult = await Promise.allSettled(
         Array.from({ length: count }, (_, i) => deriveWalletAccount(mnemonic, i))
     )
-    const accounts = accountsResult.map((res)=>{
-        if (res.status === "fulfilled"){
+    const accounts = accountsResult.map((res) => {
+        if (res.status === "fulfilled") {
             return res.value
-        }else {
+        } else {
             return null
         }
-    }).filter(a=>a != null)
+    }).filter(a => a != null)
 
     if (accounts.length === 0) {
-    throw new Error("Failed to derive any wallet accounts")
-  }
+        throw new Error("Failed to derive any wallet accounts")
+    }
     return {
         selectedAccountIndex: accounts[0].accountIndex ?? 0,
         accounts: accounts,

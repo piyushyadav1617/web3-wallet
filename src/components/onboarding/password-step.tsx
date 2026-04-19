@@ -47,7 +47,7 @@ export function PasswordStep(props: {
             confirmPassword: "",
             acknowledge: false,
         },
-        mode: 'onTouched', 
+        mode: 'onTouched',
         // reValidateMode: 'onChange'
     })
 
@@ -57,9 +57,7 @@ export function PasswordStep(props: {
 
     return (
         <div className="h-full flex flex-col gap-4">
-            <h2 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-
-                Wallet Password</h2>
+            <h2 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">Wallet Password</h2>
             <form id={formId} onSubmit={form.handleSubmit(onSubmit)}>
                 <FieldGroup>
                     {/* Password */}

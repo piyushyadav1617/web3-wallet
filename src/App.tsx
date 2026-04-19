@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router"
+import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router"
 import { ThemeProvider } from "./components/theme-provider"
 import { WalletSessionProvider, useWalletSession } from "./state/session-store"
 import { loadVaultRecord } from "./lib/storage"
@@ -8,6 +8,9 @@ import { UnlockPage } from "./components/unlock"
 import { WalletHomePage } from "./components/wallet"
 import { useEffect, useState } from "react"
 import { Toaster } from "sonner"
+import { WalletSwapPage } from "@/components/swap"
+import { WalletLayout } from "@/components/layout/wallet-layout"
+import { WalletSendPage } from "./components/send"
 
 type BootTarget = "loading" | "wallet" | "unlock" | "onboarding"
 
@@ -43,7 +46,7 @@ function EntryGate() {
 }
 function ProtectedWalletRoute() {
   const { isUnlocked } = useWalletSession()
-  return isUnlocked ? <WalletHomePage /> : <Navigate to="/unlock" replace />
+  return isUnlocked ? <Outlet /> : <Navigate to="/unlock" replace />
 }
 
 const router = createBrowserRouter([
@@ -51,16 +54,29 @@ const router = createBrowserRouter([
   { path: "/landing", Component: LandingPage },
   { path: "/onboarding", Component: OnboardingFlow },
   { path: "/unlock", Component: UnlockPage },
-  { path: "/wallet", Component: ProtectedWalletRoute },
+  {
+    path: "/wallet", Component: ProtectedWalletRoute,
+    children: [
+      {
+        Component: WalletLayout,
+        children: [
+          { index: true, Component: WalletHomePage },
+          { path: "swap", Component: WalletSwapPage },
+          {path: "send", Component: WalletSendPage}
+        ]
+      }
+
+    ],
+  },
 ])
 
 function App() {
 
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-thee">
       <WalletSessionProvider>
         <RouterProvider router={router} />
-         <Toaster />
+        <Toaster />
       </WalletSessionProvider>
     </ThemeProvider>
   )

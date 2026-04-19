@@ -199,7 +199,7 @@ function NetworkRow({ item }: { item: NetworkItem }) {
                 <div className="text-xl leading-none font-medium tracking-tight">
                     {item.name}
                 </div>
-                <div className="mt-2 text-2xl text-muted-foreground sm:text-lg truncate">
+                <div className=" text-muted-foreground truncate">
                     {shortenAddress(item.address)}
                 </div>
             </div>

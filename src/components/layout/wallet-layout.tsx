@@ -6,7 +6,8 @@ import {
     ChevronDown,
     Check,
     Plus,
-    ChevronLeft
+    ChevronLeft,
+    WalletMinimal
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -18,18 +19,13 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useWalletSession } from "@/state/session-store"
-import { useState } from "react"
 import { Outlet, useLocation, useNavigate } from "react-router"
 
 export function WalletLayout() {
-    const accounts = ["Account 1"]
     const location = useLocation()
     const navigate = useNavigate()
-    const [selectedAccount, setSelectedAccount] = useState(accounts[0])
-
-    function handleAccountSelect(account: string) {
-        setSelectedAccount(account)
-    }
+    const { keyring, addAccount, setSelectedAccountIndex } = useWalletSession()
+    const accounts = keyring?.accounts
 
     function renderDynamicHeader() {
         switch (location.pathname) {
@@ -41,35 +37,46 @@ export function WalletLayout() {
                                 variant="ghost"
                                 className="px-0 h-auto hover:bg-transparent focus-visible:ring-0"
                             >
-                                <span className="text-base font-medium">{selectedAccount}</span>
+                                {keyring &&<span className="text-base font-medium">Account {keyring?.selectedAccountIndex + 1}</span>}
                                 <ChevronDown className="ml-1 size-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="w-48">
-                            {accounts.map((account) => (
+                            {accounts?.map((account) => (
                                 <DropdownMenuItem
-                                    key={account}
-                                    onClick={() => handleAccountSelect(account)}
-                                    className="flex items-center justify-between"
+                                    key={account.accountIndex}
+                                    onClick={() => setSelectedAccountIndex(account.accountIndex)}
+                                    className="flex items-center"
                                 >
-                                    <span>{account}</span>
-                                    {selectedAccount === account ? <Check className="size-4" /> : null}
+                                    <WalletMinimal />
+                                    <span>{account.label}</span>
+                                    {keyring?.selectedAccountIndex === account.accountIndex ? <Check className="size-4" /> : null}
                                 </DropdownMenuItem>
                             ))}
                             <DropdownMenuItem>
-                                <Button variant={"ghost"} size={"sm"} className="w-full"><Plus /> Add</Button>
+                                <Button
+                                    variant={"ghost"}
+                                    size={"sm"}
+                                    className="w-full"
+                                    onClick={()=>{
+                                        addAccount()
+                                    }}
+                                    >
+                                    <Plus />
+                                    Add
+                                </Button>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 )
             case "/wallet/swap":
                 return (
-                        <button
-                            onClick={() => navigate("/wallet")}
-                            className="absolute group w-10"
-                        >
-                            <ChevronLeft className="size-7 text-muted-foreground group-hover:-translate-x-1  group-hover:text-foreground transition-all delay-100 ease-linear" />
-                        </button>
+                    <button
+                        onClick={() => navigate("/wallet")}
+                        className="absolute group w-10"
+                    >
+                        <ChevronLeft className="size-7 text-muted-foreground group-hover:-translate-x-1  group-hover:text-foreground transition-all delay-100 ease-linear" />
+                    </button>
                 )
             case "/wallet/send":
                 return (
@@ -123,15 +130,15 @@ export function UserDropdownMenu() {
                         <Wallet className="mr-2 h-4 w-4" />
                         Accounts
                     </DropdownMenuItem> */}
-                    <DropdownMenuItem onClick={()=>navigate("/wallet/swap")}>
+                    <DropdownMenuItem onClick={() => navigate("/wallet/swap")}>
                         <ArrowLeftRight className="mr-2 h-4 w-4" />
                         Swap
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={()=>navigate("/wallet")}>
+                    <DropdownMenuItem onClick={() => navigate("/wallet")}>
                         <QrCode className="mr-2 h-4 w-4" />
                         Recieve
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={()=>navigate("/wallet/send")}>
+                    <DropdownMenuItem onClick={() => navigate("/wallet/send")}>
                         <Send className="mr-2 h-4 w-4" />
                         Send
                     </DropdownMenuItem>

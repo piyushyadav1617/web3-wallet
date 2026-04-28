@@ -1,4 +1,4 @@
-import type { Keyring } from "@/lib/keyring"
+import { addNewAccount, type Keyring } from "@/lib/keyring"
 import { createContext, useContext, useMemo, useState } from "react"
 
 
@@ -16,7 +16,9 @@ export const initialSessionState: SessionState = {
 
 type SessionContextValue = SessionState & {
   unlock: (mnemonic: string, keyring: Keyring) => void
-  lock: () => void
+  lock: () => void,
+  addAccount: () => Promise<void>
+  setSelectedAccountIndex: (index: number) => void
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null)
@@ -37,6 +39,39 @@ export function WalletSessionProvider({ children }: { children: React.ReactNode 
       lock: () => {
         setState(initialSessionState)
       },
+      addAccount: async () => {
+        const prev = state
+        if (!prev.mnemonic || !prev.keyring) return
+
+        const updatedKeyring = await addNewAccount(
+          prev.mnemonic,
+          prev.keyring
+        )
+
+        setState({
+          ...prev,
+          keyring: updatedKeyring,
+        })
+      },
+      setSelectedAccountIndex: (index: number) => {
+        setState((prev) => {
+          if (!prev.keyring) return prev
+
+          const exists = prev.keyring.accounts.some(
+            (acc) => acc.accountIndex === index
+          )
+
+          if (!exists) return prev
+
+          return {
+            ...prev,
+            keyring: {
+              ...prev.keyring,
+              selectedAccountIndex: index,
+            },
+          }
+        })
+      }
     }),
     [state]
   )

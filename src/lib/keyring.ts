@@ -115,3 +115,24 @@ export async function createInitialKeyring(
         accounts: accounts,
     }
 }
+
+export function getNextAccountIndex(keyring: Keyring): number {
+    if (keyring.accounts.length === 0) return 0
+
+    return Math.max(...keyring.accounts.map(a => a.accountIndex)) + 1
+}
+
+export async function addNewAccount(
+    mnemonic: string,
+    keyring: Keyring
+): Promise<Keyring> {
+    const nextIndex = getNextAccountIndex(keyring)
+
+    const newAccount = await deriveWalletAccount(mnemonic, nextIndex)
+
+    return {
+        ...keyring,
+        accounts: [...keyring.accounts, newAccount],
+        selectedAccountIndex: newAccount.accountIndex,
+    }
+}

@@ -1,11 +1,5 @@
 import {
-    Field,
-    FieldContent,
-    FieldDescription,
-    FieldError,
-    FieldGroup,
-    FieldLabel,
-    FieldSet,
+    Field
 } from "@/components/ui/field"
 import { Button } from "@/components/ui/button"
 import { useId, useState } from "react"
@@ -13,7 +7,7 @@ import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { InputGroup, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
-import { EyeOffIcon, EyeIcon, Unlock } from "lucide-react"
+import { EyeOffIcon, EyeIcon } from "lucide-react"
 import { loadKeyringMeta, loadVaultRecord } from "@/lib/storage"
 import { decryptVault } from "@/lib/vault"
 import { useNavigate } from "react-router"

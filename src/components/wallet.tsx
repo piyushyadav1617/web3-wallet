@@ -1,25 +1,9 @@
 import {
-  Menu, Wallet, ArrowLeftRight, QrCode,
-  Settings, HelpCircle,
   Send,
-  LockKeyhole,
-  ArrowDownLeft,
   ArrowDownUp,
   DollarSign,
-  ChevronDown,
-  Check,
-  Plus
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useWalletSession } from "@/state/session-store"
 import { NetworksList } from "./accounts-list"
 import { useNavigate } from "react-router"
 

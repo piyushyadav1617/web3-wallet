@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { motion, AnimatePresence } from "motion/react"
+import { motion } from "motion/react"
 import { Button } from "@/components/ui/button"
 import { generateRandomIndices, shuffleArray } from "@/lib/utils"
 
@@ -183,7 +183,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogMedia,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 export function ErrorAlert({ open, onOpenChange, action }: AlertProps){

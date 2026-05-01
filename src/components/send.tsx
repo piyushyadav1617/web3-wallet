@@ -2,12 +2,10 @@ import { useId, useState } from "react"
 import * as z from "zod"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useNavigate } from "react-router"
 
 import { Button } from "@/components/ui/button"
 import {
     Field,
-    FieldContent,
     FieldError,
     FieldGroup,
     FieldLabel,
@@ -38,7 +36,7 @@ const sendSchema = z.object({
 type SendFormValues = z.infer<typeof sendSchema>
 
 export function WalletSendPage() {
-    const navigate = useNavigate()
+
     const formId = useId()
 
     const form = useForm<SendFormValues>({
@@ -54,9 +52,6 @@ export function WalletSendPage() {
     const recipient = form.watch("recipient")
     const amount = form.watch("amount")
 
-    const parsedAmount = Number(amount || 0)
-    const fiatValue = Number.isFinite(parsedAmount) ? parsedAmount * 0 : 0
-    const availableBalance = 0
 
     function onSubmit(values: SendFormValues) {
         console.log("send form", values)

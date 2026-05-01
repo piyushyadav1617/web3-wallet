@@ -1,6 +1,6 @@
 import { ArrowUpDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import type { Network } from "@/lib/keyring"
 import { NetworkDropdown } from "./netowork-dropdown"
 
@@ -51,7 +51,6 @@ export function WalletSwapPage() {
     const [toNetwork, setToNetwork] = useState<Network>("solana")
     const [isSwapping, setIsSwapping] = useState(false)
     const [fromAmount, setFromAmount] = useState("")
-    const [toAmount, setToAmount] = useState("");
 
     // useEffect(()=>{
     //     setToAmount(String(Math.random()*30))
@@ -116,7 +115,7 @@ export function WalletSwapPage() {
                 >
                     
                     <SwapSection
-                        amount={toAmount}
+                        amount={""}
                         readonly={true}
                         network={toNetwork}
                         onChange={(nw)=>{

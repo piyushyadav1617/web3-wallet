@@ -1,5 +1,5 @@
 import {
-    Menu, Wallet, ArrowLeftRight, QrCode,
+    Menu, ArrowLeftRight, QrCode,
     Settings, HelpCircle,
     Send,
     LockKeyhole,

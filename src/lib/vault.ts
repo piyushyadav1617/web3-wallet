@@ -46,7 +46,8 @@ export type VaultRecord = {
 
 export async function encryptVault(
   mnemonic: string,
-  password: string
+  password: string,
+  
 ): Promise<VaultRecord> {
   const salt = crypto.getRandomValues(new Uint8Array(16))
   const iv = crypto.getRandomValues(new Uint8Array(12))

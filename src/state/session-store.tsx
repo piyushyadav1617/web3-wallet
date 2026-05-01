@@ -1,5 +1,6 @@
-import { addNewAccount, type Keyring } from "@/lib/keyring"
 import { createContext, useContext, useMemo, useState } from "react"
+import { addNewAccount, type Keyring, keyringToMeta } from "@/lib/keyring"
+import { saveKeyringMeta } from "@/lib/storage"
 
 
 export type SessionState = {
@@ -18,7 +19,7 @@ type SessionContextValue = SessionState & {
   unlock: (mnemonic: string, keyring: Keyring) => void
   lock: () => void,
   addAccount: () => Promise<void>
-  setSelectedAccountIndex: (index: number) => void
+  setSelectedAccountIndex: (index: number) => Promise<void>
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null)
@@ -40,37 +41,40 @@ export function WalletSessionProvider({ children }: { children: React.ReactNode 
         setState(initialSessionState)
       },
       addAccount: async () => {
-        const prev = state
-        if (!prev.mnemonic || !prev.keyring) return
+        if (!state.mnemonic || !state.keyring) return
 
         const updatedKeyring = await addNewAccount(
-          prev.mnemonic,
-          prev.keyring
+          state.mnemonic,
+          state.keyring
         )
 
-        setState({
+        await saveKeyringMeta(keyringToMeta(updatedKeyring))
+
+        setState((prev) => ({
           ...prev,
           keyring: updatedKeyring,
-        })
+        }))
       },
-      setSelectedAccountIndex: (index: number) => {
-        setState((prev) => {
-          if (!prev.keyring) return prev
+      setSelectedAccountIndex: async (index: number) => {
+        if (!state.keyring) return
 
-          const exists = prev.keyring.accounts.some(
-            (acc) => acc.accountIndex === index
-          )
+        const exists = state.keyring.accounts.some(
+          (acc) => acc.accountIndex === index
+        )
 
-          if (!exists) return prev
+        if (!exists) return
 
-          return {
-            ...prev,
-            keyring: {
-              ...prev.keyring,
-              selectedAccountIndex: index,
-            },
-          }
-        })
+        const updatedKeyring = {
+          ...state.keyring,
+          selectedAccountIndex: index,
+        }
+
+        await saveKeyringMeta(keyringToMeta(updatedKeyring))
+
+        setState((prev) => ({
+          ...prev,
+          keyring: updatedKeyring,
+        }))
       }
     }),
     [state]

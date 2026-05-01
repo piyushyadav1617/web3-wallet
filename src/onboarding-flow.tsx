@@ -12,7 +12,7 @@ import { ConfirmPhraseStep } from "@/components/onboarding/confirm-phrase-step"
 import { CompletionStep } from "@/components/onboarding/completion-step"
 import { generateNewMnemonic } from "./lib/mnemonic"
 import { encryptVault } from "./lib/vault"
-import { saveVaultRecord } from "./lib/storage"
+import { saveKeyringMeta, saveVaultRecord } from "./lib/storage"
 import { useNavigate } from "react-router"
 import { useWalletSession } from "./state/session-store"
 import { createInitialKeyring } from "./lib/keyring"
@@ -60,6 +60,7 @@ export function OnboardingFlow() {
         state.draft.passwordInput
       )
       await saveVaultRecord(vault)
+      await saveKeyringMeta({selectedAccountIndex: 0, accounts: [{accountIndex: 0, label: "Account 1"}]})
       setDirection(1)
       dispatch({ type: "NEXT_STEP" })
     } catch {
@@ -71,7 +72,7 @@ export function OnboardingFlow() {
 
   async function handleOpenNewWallet(){
       const mnemonic = state.draft.mnemonic
-      const keyring = await createInitialKeyring(mnemonic, 1)
+      const keyring = await createInitialKeyring(mnemonic, {selectedAccountIndex: 0, accounts: [{accountIndex: 0, label: "Account 1"}]})
       unlock(mnemonic, keyring)
       dispatch({type: "CLEAR_DRAFT"})
       navigate("/wallet")

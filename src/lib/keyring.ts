@@ -26,6 +26,14 @@ export type Keyring = {
     selectedAccountIndex: number
 }
 
+export type KeyringMeta = {
+    selectedAccountIndex: number
+    accounts: {
+        accountIndex: number
+        label: string
+    }[]
+}
+
 
 export function deriveEthereumWallet(mnemonic: string, accountIndex: number): DerivedAddress {
     const path = `m/44'/60'/0'/0/${accountIndex}`;
@@ -76,14 +84,15 @@ export function deriveBitcoinAddress(mnemonic: string, accountIndex: number): De
 
 export async function deriveWalletAccount(
     mnemonic: string,
-    accountIndex: number
+    accountIndex: number,
+    label?: string
 ): Promise<WalletAccount> {
     const ethereum = deriveEthereumWallet(mnemonic, accountIndex)
     const bitcoin = deriveBitcoinAddress(mnemonic, accountIndex)
     const solana = await deriveSolanaAddress(mnemonic, accountIndex)
     return {
         accountIndex,
-        label: `Account ${accountIndex + 1}`,
+        label: label ?? `Account ${accountIndex + 1}`,
         addresses: {
             ethereum: ethereum,
             solana: solana,
@@ -94,10 +103,12 @@ export async function deriveWalletAccount(
 
 export async function createInitialKeyring(
     mnemonic: string,
-    count = 1
+    keyringMeta: KeyringMeta
 ): Promise<Keyring> {
     const accountsResult = await Promise.allSettled(
-        Array.from({ length: count }, (_, i) => deriveWalletAccount(mnemonic, i))
+        keyringMeta.accounts.map(acc => {
+            return deriveWalletAccount(mnemonic, acc.accountIndex, acc.label)
+        })
     )
     const accounts = accountsResult.map((res) => {
         if (res.status === "fulfilled") {
@@ -111,7 +122,11 @@ export async function createInitialKeyring(
         throw new Error("Failed to derive any wallet accounts")
     }
     return {
-        selectedAccountIndex: accounts[0].accountIndex ?? 0,
+        selectedAccountIndex: accounts.some(
+            (a) => a.accountIndex === keyringMeta.selectedAccountIndex
+        )
+            ? keyringMeta.selectedAccountIndex
+            : accounts[0].accountIndex,
         accounts: accounts,
     }
 }
@@ -135,4 +150,14 @@ export async function addNewAccount(
         accounts: [...keyring.accounts, newAccount],
         selectedAccountIndex: newAccount.accountIndex,
     }
+}
+
+export function keyringToMeta(keyring: Keyring): KeyringMeta {
+  return {
+    selectedAccountIndex: keyring.selectedAccountIndex,
+    accounts: keyring.accounts.map((account) => ({
+      accountIndex: account.accountIndex,
+      label: account.label,
+    })),
+  }
 }

@@ -14,7 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { InputGroup, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 import { EyeOffIcon, EyeIcon, Unlock } from "lucide-react"
-import { loadVaultRecord } from "@/lib/storage"
+import { loadKeyringMeta, loadVaultRecord } from "@/lib/storage"
 import { decryptVault } from "@/lib/vault"
 import { useNavigate } from "react-router"
 import { useWalletSession } from "@/state/session-store"
@@ -31,7 +31,7 @@ type FormValues = z.infer<typeof schema>
 export function UnlockPage() {
     const formId = useId()
     const navigate = useNavigate()
-    const {unlock} = useWalletSession()
+    const { unlock } = useWalletSession()
     const form = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: {
@@ -41,20 +41,21 @@ export function UnlockPage() {
     const [show, setShow] = useState(false)
 
     async function onSubmit(values: FormValues) {
-    try {
-      const vault = await loadVaultRecord()
-
-      if (!vault) {
-        throw new Error("No wallet found")
-      }
-      const { mnemonic } = await decryptVault(vault, values.password)
-      const keyring = await createInitialKeyring(mnemonic, 1)
-      unlock(mnemonic, keyring)
-      form.reset()
-      navigate("/wallet")
-    } catch {
-      toast.error("Incorrect password or corrupted vault")
-    }
+        try {
+            const vault = await loadVaultRecord()
+            if (!vault) {
+                throw new Error("No wallet found")
+            }
+            const meta = await loadKeyringMeta()
+            if (!meta) throw new Error("No keyring metadata found")
+            const { mnemonic } = await decryptVault(vault, values.password)
+            const keyring = await createInitialKeyring(mnemonic, meta)
+            unlock(mnemonic, keyring)
+            form.reset()
+            navigate("/wallet")
+        } catch {
+            toast.error("Incorrect password or corrupted vault")
+        }
     }
     return <main className="h-dvh w-full flex items-center justify-center">
         <div className="space-y-6 w-full max-w-xs">
@@ -83,7 +84,7 @@ export function UnlockPage() {
                                     <span className="sr-only">Toggle password visibility</span>
                                 </InputGroupButton>
                             </InputGroup>
-                         
+
                         </Field>
                     )}
                 />

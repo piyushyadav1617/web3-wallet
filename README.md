@@ -1,75 +1,117 @@
-# React + TypeScript + Vite
+Here’s a concise README focused on what you’ve built:
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Currently, two official plugins are available:
+# HD Multi-Chain Wallet (Web)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+A browser-based HD wallet supporting deterministic multi-account and multi-chain address generation with encrypted vault storage and IndexedDB persistence.
 
-## React Compiler
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Features
 
-Note: This will impact Vite dev & build performances.
+### Wallet Core
 
-## Expanding the ESLint configuration
+* BIP39 mnemonic-based wallet
+* Deterministic HD account derivation
+* Multiple accounts (`Account 1`, `Account 2`, …)
+* Add new accounts dynamically
+* Account switching
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
+### Supported Networks
+
+* Ethereum (and EVM chains: Base, Optimism, Arbitrum, Polygon, BNB, Linea)
+* Solana
+* Bitcoin
+
+
+### Security
+
+* Mnemonic encrypted using:
+
+  * PBKDF2 (SHA-256)
+  * AES-GCM (256-bit)
+* Stored in IndexedDB
+* Decrypted only in-memory during session
+* No private keys persisted
+
+
+### Persistence Model
+
+Stored in IndexedDB:
+
+* **Vault (encrypted mnemonic)**
+* **Keyring Meta (public only)**
+
+  ```ts
   {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+    selectedAccountIndex,
+    accounts: [{ accountIndex, label }]
+  }
+  ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Derived at runtime:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+* All addresses (from mnemonic + index)
+
+
+### Session
+
+* In-memory session store
+* Stores:
+
+  * decrypted mnemonic
+  * derived keyring
+* Supports:
+
+  * unlock / lock
+  * addAccount
+  * switch account
+
+
+### Account Flow
+
+**Unlock**
+
+```
+vault → decrypt → load meta → derive accounts → session
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+**Add Account**
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+nextIndex → derive → update keyring → persist meta
+```
+
+**Switch Account**
+
+```
+update selectedAccountIndex → persist meta
+```
+
+## Tech Stack
+
+* React + TypeScript
+* Web Crypto API
+* IndexedDB
+* ethers.js (Ethereum)
+* micro-ed25519-hdkey (Solana)
+* @scure/bip39, @scure/bip32
+* bitcoinjs-lib
+
+
+## Notes
+
+* Addresses are not stored, only derived
+* EVM chains reuse Ethereum address
+* Bitcoin uses legacy P2PKH
+
+
+## Currently working on
+
+* SegWit Bitcoin (BIP84)
+* Token balances (ERC20/SPL)
+* Transaction signing
+* Network RPC integration
+
+
+This project focuses on correct HD wallet architecture, deterministic derivation, and clean state management.
